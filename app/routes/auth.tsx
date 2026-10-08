@@ -1,48 +1,13 @@
-import React, {useEffect} from 'react';
+import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { usePuterStore } from "~/lib/puter";
-import {useLocation,useNavigate} from "react-router";
 
-export const meta = () => [
-    { title: 'Resuming | Auth' },
-    { name: 'description', content: 'Log in to your account.' }
-];
+export const meta = () => [{ title: "SiraMap · Sign in" }, { name: "description", content: "Sign in to your SiraMap workspace." }];
 
 const Auth = () => {
-
-    const { isLoading, auth } = usePuterStore();
-    const location = useLocation();
-    const next = location.search.split('next=')[1];
-    const navigate = useNavigate();
-    useEffect(() => {
-        if (auth.isAuthenticated) navigate(next);
-    }, [auth.isAuthenticated, next]);
-    return (
-        <main className="bg-[url('/images/bg-auth.svg')] bg-cover min-h-screen flex items-center justify-center">
-            <div className="gradient-border shadow-lg">
-                <section className="flex flex-col gap-8 bg-white rounded-2xl p-10">
-                    <div className="flex flex-col items-center gap-2 text-center">
-                        <h1>Welcome</h1>
-                        <h2>Log In to Continue Your Job Journey</h2>
-                    </div>
-                    <div>
-                        {isLoading ? (
-                            <button className="auth-button animate-pulse">
-                                <p>Signing in...</p>
-                            </button>
-                        ) : auth?.isAuthenticated ? (
-                            <button className="auth-button" onClick={auth.signOut}>
-                                <p>Log Out</p>
-                            </button>
-                        ) : (
-                            <button className="auth-button" onClick={auth.signIn}>
-                                <p>Log In</p>
-                            </button>
-                        )}
-                    </div>
-                </section>
-            </div>
-        </main>
-    );
+  const { isLoading, auth } = usePuterStore(); const location = useLocation(); const navigate = useNavigate();
+  const next = new URLSearchParams(location.search).get("next") || "/";
+  useEffect(() => { if (auth.isAuthenticated) navigate(next); }, [auth.isAuthenticated, navigate, next]);
+  return <main className="auth-page"><section className="auth-card"><div className="brand-lockup" style={{justifyContent:"center"}}><span className="brand-mark"><span /><span /><span /></span><span className="brand-name">SiraMap</span></div><p className="eyebrow" style={{justifyContent:"center",marginTop:30}}>Your career signal workspace</p><h1>Start with a clearer map.</h1><h2>Sign in to save your analyses, compare roles, and keep your next move in view.</h2>{isLoading ? <button className="auth-button">Preparing your workspace...</button> : auth.isAuthenticated ? <button className="auth-button" onClick={auth.signOut}>Sign out</button> : <button className="auth-button" onClick={auth.signIn}>Continue with Puter</button>}</section></main>;
 };
-
 export default Auth;

@@ -1,4 +1,4 @@
-import React, { useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import FileUploader from "~/components/FileUploader";
 import Navbar from "~/components/Navbar";
 import { usePuterStore } from "~/lib/puter";
@@ -8,28 +8,13 @@ import { generateUUID } from "~/lib/utils";
 import { prepareInstructions } from "constants/index";
 
 const Upload = () => {
-  const { fs, ai, kv } = usePuterStore();
-  const navigate = useNavigate();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [statusText, setStatusText] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-
+  const { fs, ai, kv } = usePuterStore(); const navigate = useNavigate();
+  const [isProcessing, setIsProcessing] = useState(false); const [statusText, setStatusText] = useState(""); const [file, setFile] = useState<File | null>(null);
   const mapOpportunity = async ({ companyName, jobTitle, jobDescription, file: resumeFile }: { companyName: string; jobTitle: string; jobDescription: string; file: File }) => {
     setIsProcessing(true); setStatusText("Uploading your source...");
-    try {
-      const uploadFile = await fs.upload([resumeFile]); if (!uploadFile) throw new Error("Resume upload failed.");
-      setStatusText("Reading the first page..."); const imageFile = await convertPdfToImage(resumeFile); if (!imageFile.file) throw new Error(imageFile.error || "Preview generation failed.");
-      setStatusText("Building your analysis map..."); const uploadImage = await fs.upload([imageFile.file]); if (!uploadImage) throw new Error("Preview upload failed.");
-      const id = generateUUID(); const data: any = { id, resumePath: uploadFile.path, imagePath: uploadImage.path, companyName, jobTitle, jobDescription, feedback: "" };
-      await kv.set(`resume:${id}`, JSON.stringify(data)); setStatusText("Finding your strongest signals...");
-      const result = await ai.feedback(uploadFile.path, prepareInstructions({ jobTitle, jobDescription })); if (!result) throw new Error("Analysis did not return feedback.");
-      const content = typeof result.message.content === "string" ? result.message.content : result.message.content[0].text;
-      data.feedback = JSON.parse(content); await kv.set(`resume:${id}`, JSON.stringify(data)); setStatusText("Map complete. Opening your result..."); navigate(`/feedback/${id}`);
-    } catch (error) { setStatusText(error instanceof Error ? error.message : "Something went wrong. Please try again."); setIsProcessing(false); }
+    try { const uploadFile = await fs.upload([resumeFile]); if (!uploadFile) throw new Error("Resume upload failed."); setStatusText("Reading the first page..."); const imageFile = await convertPdfToImage(resumeFile); if (!imageFile.file) throw new Error(imageFile.error || "Preview generation failed."); setStatusText("Building your analysis map..."); const uploadImage = await fs.upload([imageFile.file]); if (!uploadImage) throw new Error("Preview upload failed."); const id = generateUUID(); const data: any = { id, resumePath: uploadFile.path, imagePath: uploadImage.path, companyName, jobTitle, jobDescription, feedback: "" }; await kv.set(`resume:${id}`, JSON.stringify(data)); setStatusText("Finding your strongest signals..."); const result = await ai.feedback(uploadFile.path, prepareInstructions({ jobTitle, jobDescription })); if (!result) throw new Error("Analysis did not return feedback."); const content = typeof result.message.content === "string" ? result.message.content : result.message.content[0].text; data.feedback = JSON.parse(content); await kv.set(`resume:${id}`, JSON.stringify(data)); setStatusText("Map complete. Returning to your workspace..."); navigate("/"); } catch (error) { setStatusText(error instanceof Error ? error.message : "Something went wrong. Please try again."); setIsProcessing(false); }
   };
-
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const formData = new FormData(event.currentTarget); if (!file) { setStatusText("Add a PDF resume to continue."); return; } mapOpportunity({ companyName: String(formData.get("company-name") || ""), jobTitle: String(formData.get("job-title") || ""), jobDescription: String(formData.get("job-description") || ""), file }); };
-
   return <main className="site-shell"><Navbar /><section className="main-section"><div className="upload-layout"><div><p className="eyebrow">New opportunity map</p><h1>Give your resume a clearer direction.</h1><h2>Share the role you want. SiraMap will surface the signals that help you move closer to it.</h2></div>{isProcessing ? <div className="process-card"><h3>{statusText}</h3><div className="process-step"><span className="step-dot" />Your resume is being read</div><div className="process-step"><span className="step-dot" />Role alignment is being mapped</div><div className="process-step"><span className="step-dot" />Actionable improvements are next</div></div> : <form className="upload-panel" onSubmit={handleSubmit}><div className="form-div"><label htmlFor="company-name">Company or team</label><input required name="company-name" id="company-name" placeholder="e.g. Northstar Labs" /></div><div className="form-div"><label htmlFor="job-title">Target role</label><input required name="job-title" id="job-title" placeholder="e.g. Product Designer" /></div><div className="form-div"><label htmlFor="job-description">Job description <span style={{textTransform:"none",letterSpacing:0}}>(optional)</span></label><textarea rows={5} name="job-description" id="job-description" placeholder="Paste the role context for a sharper match map..." /></div><div className="form-div"><label htmlFor="uploader">Resume PDF</label><FileUploader onFileSelect={setFile} /></div><button type="submit" className="primary-button">Build my analysis map <span>↗</span></button>{statusText && <p style={{color:"#b25d49",fontSize:12}}>{statusText}</p>}</form>}</div></section></main>;
 };
 export default Upload;

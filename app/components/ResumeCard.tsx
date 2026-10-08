@@ -1,28 +1,15 @@
-import { resume } from 'react-dom/server'
-import { Link } from 'react-router'
-import ScoreCircle from './ScoreCircle'
+import { Link } from "react-router";
+import ScoreCircle from "./ScoreCircle";
 
-const ResumeCard = ({resume:{id,companyName,jobTitle,feedback,imagePath}}:{resume:Resume}) => {
-  return (
-    <Link to={`/resume/${id}`} className='resume-card animate-in fade-in duration-1000'>
-        <div className='resume-card-header'>
-            <div className='flex flex-col gap-2'>
-                <h2 className='!text-black font-bold break-words'>{companyName}</h2>
-                <h3 className='text-lg break-words text-gray-500'>{jobTitle}</h3>
-            </div>
-            <div className='flex-shrink-0'>
-                <ScoreCircle score={feedback.overallScore} />
-            </div>
-        </div>
-        <div className='gradient-border animate-in fade-in duration-1000'>
-            <div className='w-full h-full'>
-                <img src={imagePath}
-                alt="resume"
-                className='w-full h-[350px] max-sm:h-[200px] object-cover object-top'/>
+const ResumeCard = ({ resume }: { resume: Resume }) => (
+  <Link to={`/resume/${resume.id}`} className="resume-card">
+    <div className="resume-card-header">
+      <div className="resume-card-title"><span className="card-kicker">Application map</span><h2>{resume.companyName || "Untitled workspace"}</h2><h3>{resume.jobTitle || "Role not specified"}</h3></div>
+      <ScoreCircle score={resume.feedback.overallScore} />
+    </div>
+    <div className="resume-preview"><img src={resume.imagePath} alt={`${resume.companyName || "Resume"} preview`} /><div className="preview-overlay"><span>Open map</span><span>↗</span></div></div>
+    <div className="resume-card-footer"><span>Resume signal</span><span className="card-arrow">→</span></div>
+  </Link>
+);
 
-            </div>
-        </div>
-    </Link>
-  )
-}
-export default ResumeCard
+export default ResumeCard;

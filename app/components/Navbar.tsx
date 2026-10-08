@@ -1,22 +1,40 @@
-import React from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation } from "react-router";
+
+const navItems = [
+  { label: "Workspace", href: "/" },
+  { label: "New analysis", href: "/upload" },
+];
+
+const SiraMark = () => (
+  <span className="brand-mark" aria-hidden="true">
+    <span />
+    <span />
+    <span />
+  </span>
+);
 
 const Navbar = () => {
+  const location = useLocation();
 
   return (
-    <nav className='navbar'>
+    <header className="site-header">
+      <Link to="/" className="brand-lockup" aria-label="SiraMap workspace">
+        <SiraMark />
+        <span className="brand-name">SiraMap</span>
+      </Link>
+      <nav className="desktop-nav" aria-label="Primary navigation">
+        {navItems.map((item) => (
+          <Link key={item.href} to={item.href} className={`nav-link ${location.pathname === item.href ? "nav-link-active" : ""}`}>
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+      <Link to="/upload" className="header-action">
+        <span className="plus-icon" aria-hidden="true">+</span>
+        Start an analysis
+      </Link>
+    </header>
+  );
+};
 
-        <Link to='/'>
-
-          <p className='text-2xl font-bold text-gradient'>RESUMIND</p>
-
-        </Link>
-        <Link to='/upload' className='primary-button w-fit'>
-          Upload Resume
-        </Link>
-
-    </nav>
-  )
-}
-
-export default Navbar
+export default Navbar;
